@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Authorization</title>
+    <!-- g-fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Karla:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- g-fonts -->
+    <link rel="stylesheet" href="./main.css" />
+    <style>
+      p.sub-heading {
+        width: 266px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="notice">
+        <p id="log-s" class="hidden">Logged in Successfully</p>
+        <p id="log-f" class="hidden">Log in Failed</p>
+      </div>
+      <div class="parent-container">
+        <h1 class="main-heading">Welcome Back!</h1>
+        <p class="c-text sub-heading">
+          Log into your account to enjoy all the services without any ads for
+          free!
+        </p>
+        <div class="input-holder">
+          <input
+            type="text"
+            name=""
+            id="email"
+            placeholder="Email Address"
+            autocomplete="off"
+          />
+          <input
+            type="text"
+            name=""
+            id="password"
+            placeholder="Password"
+            autocomplete="off"
+          />
+        </div>
+        <button class="submit">Log in</button>
+        <p class="c-text bottom-text">
+          New here? <a href="./index.html">Sign up</a>
+        </p>
+      </div>
+    </main>
+    <div class="c-visual-elements" id="box1"></div>
+    <div class="c-visual-elements" id="box2"></div>
+  </body>
+  <script>
+    function noticeHandler(success = true) {
+      let sEl = document.querySelector("#log-s");
+      let fEl = document.querySelector("#log-f");
+      if (success) {
+        sEl.classList.remove("hidden");
+        setTimeout(() => {
+          sEl.classList.add("hidden");
+        }, 1000);
+      } else {
+        fEl.classList.remove("hidden");
+        setTimeout(() => {
+          fEl.classList.add("hidden");
+        }, 1000);
+      }
+    }
+    document
+      .querySelector("button.submit")
+      .addEventListener("click", async () => {
+        let email = document.querySelector("input#email").value;
+        let password = document.querySelector("input#password").value;
+        if (email === "admin" && password === "admin") {
+          try {
+            let response = await fetch("http://localhost:9000/admin", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                userEmail: email,
+                password: password,
+              }),
+            });
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            let data = await response.json();
+            console.log(data);
+            noticeHandler(true);
+          } catch (error) {
+            noticeHandler(false);
+            console.log("Error:", error.message);
+          }
+        } else {
+          try {
+            let response = await fetch("http://localhost:9000/login", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                userEmail: email,
+                password: password,
+              }),
+            });
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            let data = await response.json();
+            console.log(data);
+            noticeHandler(true);
+          } catch (error) {
+            noticeHandler(false);
+            console.error("Error:", error.message);
+          }
+        }
+      });
+    document.addEventListener("keypress", (event) => {
+      if (event.key === "Enter") {
+        document.querySelector("button.submit").click();
+      }
+    });
+  </script>
+</html>

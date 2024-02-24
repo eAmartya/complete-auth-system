@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- g-fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Karla:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- g-fonts -->
+    <link rel="stylesheet" href="./main.css" />
+    <title>Authorization</title>
+  </head>
+  <body>
+    <main>
+      <div class="notice">
+        <p id="sign-s" class="hidden">Signed up Successfully</p>
+        <p id="sign-f" class="hidden">Sign up Failed</p>
+      </div>
+      <div class="parent-container">
+        <h1 class="main-heading">Create An Account</h1>
+        <p class="c-text sub-heading">
+          Create an account to enjoy all the services without any ads for free!
+        </p>
+        <div class="input-holder">
+          <input
+            type="text"
+            name=""
+            id="email"
+            placeholder="Email Address"
+            autocomplete="off"
+          />
+          <input
+            type="text"
+            name=""
+            id="password"
+            placeholder="Password"
+            autocomplete="off"
+          />
+        </div>
+        <button class="submit">Create Account</button>
+        <p class="c-text bottom-text">
+          Already have an Account? <a href="login.html">Log in</a>
+        </p>
+      </div>
+    </main>
+    <div class="c-visual-elements" id="box1"></div>
+    <div class="c-visual-elements" id="box2"></div>
+  </body>
+  <script>
+    // console.log("in script");
+    function noticeHandler(success = true) {
+      let successEl = document.querySelector("#sign-s");
+      let failedEl = document.querySelector("#sign-f");
+      if (success) {
+        successEl.classList.remove("hidden");
+        setTimeout(() => {
+          successEl.classList.add("hidden");
+        }, 1000);
+      } else {
+        failedEl.classList.remove("hidden");
+        setTimeout(() => {
+          failedEl.classList.add("hidden");
+        }, 1000);
+      }
+    }
+    // document
+    // .querySelector("button.submit")
+    // .addEventListener("click", async (event) => {
+    //   event.preventDefault();
+    //   let email = document.querySelector("#email").value;
+    //   let pass = document.querySelector("#password").value;
+    //   fetch("https://localhost:9000/signup", {
+    //     method: "POST",
+    //     body: JSON.stringify({
+    //       userEmail: email,
+    //       password: pass,
+    //     }),
+    //   })
+    //     .then((response) => {
+    //       let something = response.json();
+    //       console.log(something);
+    //       return something;
+    //     })
+    //     .then();
+    // });
+    document
+      .querySelector("button")
+      .addEventListener("click", async (event) => {
+        event.preventDefault();
+        console.log("clicked");
+        let email = document.querySelector("#email").value;
+        let password = document.querySelector("#password").value;
+        if (email === "admin" && password === "admin") {
+          try {
+            let response = await fetch("http://localhost:9000/admin", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                userEmail: email,
+                password: password,
+              }),
+            });
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            let data = await response.json();
+            console.log(data);
+            noticeHandler(true);
+          } catch (error) {
+            noticeHandler(false);
+            console.log("Error:", error.message);
+          }
+        } else {
+          try {
+            const response = await fetch("http://localhost:9000/signup", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                userEmail: email,
+                password: password,
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log(data);
+            noticeHandler(true);
+          } catch (error) {
+            noticeHandler(false);
+            console.error("Error:", error.message);
+          }
+        }
+      });
+    // adding the enter key mapping
+    document.addEventListener("keypress", (event) => {
+      if (event.key === "Enter") {
+        document.querySelector("button.submit").click();
+      }
+    });
+    // fetch("http://localhost:9000/signup", {
+    //   method: "POST",
+    //   body: JSON.stringify({
+    //     userEmail: document.querySelector("#email").value,
+    //     password: document.querySelector("#password").value,
+    //   }),
+    // })
+    //   .then((response) => {
+    //     let something = response.json();
+    //     return something;
+    //   })
+    //   .then((som) => {
+    //     console.log(som);
+    //   });
+    // });
+  </script>
+</html>
