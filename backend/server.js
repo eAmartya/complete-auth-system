@@ -2,7 +2,6 @@ const express = require("express");
 const crypto = require("crypto");
 const cors = require('cors');
 const { z } = require("zod");
-// const mongoose = require("mongoose");
 const databaseConnection = require("./database/db")
 const Users = require("./model/userModel");
 const app = express();
@@ -40,9 +39,7 @@ app.post('/admin', cors(), (req, res) => {
     res.status(411).json({ msg: "invalid input" })
   }
 })
-app.post('/signup', cors(), (req, res) => {
-  // let email = req.body.userEmail;
-  // let password = req.body.password;
+app.post('/signup', cors(), async (req, res) => {
   const zodSchema = z.object({
     username: z.string(),
     password: z.string()
@@ -51,64 +48,65 @@ app.post('/signup', cors(), (req, res) => {
   let validInputs = zodSchema.safeParse(signupPayload);
   if (validInputs.success) {
     // checking for same email
-    let doesSameEmailExsits = false;
-    let data = Users.find({ username: signupPayload["username"] }).then(users => {
-      console.log(users)
-    }).catch(err => console.log(err));
-    if (data) {
-      doesSameEmailExsits = true;
-    }
-    if (doesSameEmailExsits) {
+    let data = await Users.find({ username: signupPayload["username"] })
+    if (data.length != 0) {
       res.status(200).json({
         err: "the user already exsists"
       })
     } else {
-      // memory.push({ email: email, password: generateHash(password + "") });
-      // res.status(200).json({ msg: "user added", token: generateHash(password + "") });
       newUser = new Users({
         username: signupPayload["username"],
-        password: signupPayload["password"]
+        password: generateHash(signupPayload["password"] + "")
       });
       newUser.save()
         .then(userSaved => console.log(`user Saved :${userSaved}`))
         .catch(err => console.log(err))
-      res.json({ msg: "in else" })
+      res.json({ msg: "user added" })
     }
   } else {
     // if any one of them holds undefined we return invalid input
-    // console.log(email + " " + password);
     res.json({
       err: "invalid inputs",
-      "email": email,
-      "password": password,
     })
   }
 })
 
-app.post("/login", cors(), (req, res) => {
-  let email = req.body.userEmail;
-  let password = req.body.password;
-  if (!email || !password) {
-    // if any one of them holds undefined we return invalid input
+app.post("/login", cors(), async (req, res) => {
+  // let email = req.body.userEmail;
+  // let password = req.body.password;
+  const zodSchema = z.object({
+    username: z.string(),
+    password: z.string(),
+  })
+  const loginPayload = req.body;
+  let validInputs = zodSchema.safeParse(loginPayload);
+  if (validInputs.success) {
+    // let concernedData = memory.find((el) => {
+    //   if (el.email === email && el.password === generateHash(password + "")) {
+    //     return true;
+    //   }
+    // })
+    let concernedData = await Users.find({ username: loginPayload["username"] })
+    if (!concernedData.length) {
+      //none found
+      res.json({
+        msg: "no user found, please sign up"
+      }
+      )
+    } else {
+      if (concernedData[0]["username"] === loginPayload["username"] && concernedData[0]["password"] === generateHash(loginPayload["password"] + "")) {
+        res.json({
+          msg: "logged in successfully"
+        })
+      } else {
+        res.json({
+          msg: "bad credentials"
+        })
+      }
+    }
+  } else {
     res.json({
       err: "invalid inputs",
-    })
-  }
-  let concernedData = memory.find((el) => {
-    if (el.email === email && el.password === generateHash(password + "")) {
-      return true;
-    }
-  })
-  if (!concernedData) {
-    //returned undefined
-    res.status(403).json({
-      err: "bad crendentials"
-    })
-  } else {
-    // found user
-    res.status(200).json({
-      msg: "user-found",
-      token: generateHash(password + ""),
     })
   }
 })
